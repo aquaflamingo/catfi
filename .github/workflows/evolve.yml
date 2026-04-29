@@ -1,0 +1,32 @@
+name: Natural Selection Loop
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  evolve:
+    runs-on: ubuntu-latest
+    # Prevent the loop from running if we committed an 'Extinction' message
+    if: "!contains(github.event.head_commit.message, 'Extinction')"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.MY_PAT }} # Your Secret Token here
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+
+      - name: Survival and Mutation
+        run: |
+          git config --global user.name "Slop-Organism"
+          git config --global user.email "slop@evolution.io"
+
+          # This runs the Ruby script, waits 3-8m, then finishes
+          ruby evolve.rb
+
+          git add .
+          git commit -m "Birth: Gen $(date +%s)"
+          git push
